@@ -1,0 +1,354 @@
+application code
+
+package com.studentweb.student;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class StudentApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(StudentApplication.class, args);
+	}
+
+}
+
+student controller 
+package com.studentweb.student.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.studentweb.student.dto.Studentrequest;
+import com.studentweb.student.dto.Studentresponse;
+import com.studentweb.student.entity.Student;
+import com.studentweb.student.service.Studentimp;
+
+@Controller
+
+@RestController
+@RequestMapping("/student")
+public class Studentcontroller { 
+@Autowired
+private Studentimp studentimp;
+@PostMapping("/create")
+public Studentresponse createStudent(@RequestBody Studentrequest studentrequest) {
+    return studentimp.createStudent(studentrequest);
+   // return ResponseEntity.status(HttpStatus.CREATED).body(studentresponse);
+}
+@GetMapping("/getall")
+public List<Studentresponse> getAllStudents() {
+    return studentimp.getAllStudents();
+}
+@GetMapping("/{id}")
+public Studentresponse getStudentById(@PathVariable int id) {
+    return studentimp.getStudentById(id);
+}
+@PutMapping("/{id}")
+public Studentresponse updateStudent(@PathVariable int id, @RequestBody Studentrequest studentrequest) {
+    return studentimp.updateStudent(id, studentrequest);
+}
+
+@PutMapping("/{id}/update-result")
+public Studentresponse updateStudentResult(@PathVariable int id, @RequestBody Studentrequest studentrequest) {
+    return studentimp.updateResult(id, studentrequest);
+}
+@DeleteMapping("/{id}")
+public void deleteStudent(@PathVariable int id) {
+    studentimp.deleteStudent(id);
+}
+@GetMapping("/students")
+public String getAllStudentsView(Model model) {  // Use Model instead of Student
+    List<Studentresponse> students = studentimp.getAllStudents();
+    if (students == null || students.isEmpty()) {
+        System.out.println("No students found!"); // Debug message if the list is empty or null
+    }
+    model.addAttribute("students", students);  // Use model to add the attribute
+    return "students"; // Thymeleaf template will be students.html
+}
+
+@GetMapping("/students/add")
+public String showAddStudentForm(Model model) {
+    model.addAttribute("student", new Student());
+    return "add-student"; // This refers to add-student.html Thymeleaf template
+}
+@GetMapping("/test")
+public String testPage() {
+    return "test";  // This will render test.html
+}
+}
+
+dto 
+
+studrnt request
+package com.studentweb.student.dto;
+
+public class Studentrequest {
+private String name;
+private String course;
+private int marks;
+public String getName() {
+	return name;
+}
+public void setName(String name) {
+	this.name = name;
+}
+public String getCourse() {
+	return course;
+}
+public void setCourse(String course) {
+	this.course = course;
+}
+public int getMarks() {
+	return marks;
+}
+public void setMarks(int marks) {
+	this.marks = marks;
+}
+
+}
+
+student response
+package com.studentweb.student.dto;
+
+public class Studentrequest {
+private String name;
+private String course;
+private int marks;
+public String getName() {
+	return name;
+}
+public void setName(String name) {
+	this.name = name;
+}
+public String getCourse() {
+	return course;
+}
+public void setCourse(String course) {
+	this.course = course;
+}
+public int getMarks() {
+	return marks;
+}
+public void setMarks(int marks) {
+	this.marks = marks;
+}
+
+}
+
+student entity
+package com.studentweb.student.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name="student")
+public class Student {
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+@Column(name="student_id")
+private int id;
+@Column(name="student_name")
+private String name;
+@Column(name="student_course")
+private String course;
+@Column(name="student_marks")
+private int marks;
+@Column(name="student_result")
+private String result;
+public int getId() {
+	return id;
+}
+public void setId(int id) {
+	this.id = id;
+}
+public String getName() {
+	return name;
+}
+public void setName(String name) {
+	this.name = name;
+}
+public String getCourse() {
+	return course;
+}
+public void setCourse(String course) {
+	this.course = course;
+}
+public int getMarks() {
+	return marks;
+}
+public void setMarks(int marks) {
+	this.marks = marks;
+}
+public String getResult() {
+	return result;
+}
+public void setResult(String result) {
+	this.result = result;
+}
+@Override
+public String toString() {
+	return "Student [id=" + id + ", name=" + name + ", course=" + course + ", marks=" + marks + ", result=" + result
+			+ "]";
+}
+
+}
+
+student repository
+package com.studentweb.student.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.studentweb.student.entity.Student;
+
+public interface Studentrepository extends JpaRepository<Student, Integer> {
+
+}
+
+student service
+
+package com.studentweb.student.service;
+
+import java.util.List;
+
+import com.studentweb.student.dto.Studentrequest;
+import com.studentweb.student.dto.Studentresponse;
+
+public interface Studentservice {
+	 public Studentresponse createStudent( Studentrequest studentrequest);
+	 public List<Studentresponse> getAllStudents();
+	 public Studentresponse getStudentById( int id);
+	 public Studentresponse deleteStudent( int id);
+	 public Studentresponse updateStudent(int id, Studentrequest studentrequest);
+	 public Studentresponse updateResult(int id,Studentrequest studentRequest);
+}
+
+student service implementation
+
+package com.studentweb.student.service;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.studentweb.student.dto.Studentrequest;
+import com.studentweb.student.dto.Studentresponse;
+import com.studentweb.student.entity.Student;
+import com.studentweb.student.repository.Studentrepository;
+@Service
+public class Studentimp implements Studentservice{
+@Autowired
+private Studentrepository studentrepository;
+	@Override
+	public Studentresponse createStudent(Studentrequest studentrequest) {
+		Student student = new Student(); 
+		 student.setName(studentrequest.getName());
+		    student.setCourse(studentrequest.getCourse());
+		    student.setMarks(studentrequest.getMarks());
+		    // Optionally, you can set the result based on marks
+		    if (student.getMarks() >= 35) {
+		        student.setResult("Pass");
+		    } else {
+		        student.setResult("Fail");
+		    }
+        Student savedStudent = studentrepository.save(student);
+        return convertToStudentresponse(savedStudent);
+	}
+	
+	private Studentresponse convertToStudentresponse(Student savedStudent) {
+		return new Studentresponse(
+		        savedStudent.getId(),
+		        savedStudent.getName(),
+		        savedStudent.getMarks(),
+		        savedStudent.getCourse(),
+		        savedStudent.getResult()
+		    );
+		//return s;
+	}
+
+	@Override
+	public List<Studentresponse> getAllStudents() {
+		
+		List<Student> students = studentrepository.findAll();
+		System.out.println("Fetched Students: " + students);
+
+	    return students.stream()
+	            .map(student -> new Studentresponse(
+	                    student.getId(),
+	                    student.getName(),
+	                    student.getMarks(),
+	                    student.getCourse(),
+	                    student.getResult())	
+	            )
+	            .collect(Collectors.toList());
+	    }
+	
+
+	@Override
+	public Studentresponse getStudentById(int id) {
+		Student student = studentrepository.findById(id).get();
+//		the non-null value described by this Optional//Student student
+	             //   .orElseThrow(() -> new RuntimeException("Student not found"));
+	        return convertToStudentresponse(student);
+	}
+	
+	@Override
+	public Studentresponse updateStudent(int id, Studentrequest studentrequest) {
+		
+		Student student = studentrepository.findById(id).get();
+		//if you keep .get() it will take sStudent student or else it will show you to take optional list
+		      //     optional this   //   .orElseThrow(() -> new RuntimeException("Student not found"));
+		        student.setName(studentrequest.getName());
+		        student.setCourse(studentrequest.getCourse());
+		        student.setMarks(studentrequest.getMarks());
+		        Student updatedStudent = studentrepository.save(student);
+		        return convertToStudentresponse(updatedStudent);
+		   }
+
+	@Override
+	public Studentresponse updateResult(int id,Studentrequest studentRequest) {
+		Optional<Student> studentOpt = studentrepository.findById(id);
+		   if (studentOpt.isPresent()) {
+		        Student student = studentOpt.get();
+		        student.setName(studentRequest.getName());  // If name is provided in the request
+		        student.setMarks(studentRequest.getMarks());  // Update marks from the request
+		        student.setCourse(studentRequest.getCourse());  // Update course if provided
+
+		        // Logic to calculate result directly in the method
+		        String result = (student.getMarks() >= 50) ? "Pass" : "Fail";
+		        
+		        student.setResult(result);
+		        Student updatedStudent = studentrepository.save(student);
+		        return convertToStudentresponse(updatedStudent);
+		    }
+		return null;
+	}
+
+	@Override
+	public Studentresponse deleteStudent(int id) {
+		Student student=studentrepository.findById(id).get();
+		 return convertToStudentresponse(student);
+	}
+
+}
+
